@@ -4,6 +4,16 @@ A lightweight, browser-based 3D cabinet design tool that runs entirely in your b
 
 ![3D Cabinet Sketcher](https://img.shields.io/badge/three.js-r128-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![No Dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)
 
+## 🎯 Try It Now - No Download Required!
+
+**Live Demo:** [https://3d-sketch-light.netlify.app/](https://3d-sketch-light.netlify.app/)
+
+## 📸 Screenshots
+
+![3D Cabinet Sketcher Interface](https://i.imgur.com/NXuYVNR.png)
+
+![3D View Example](https://i.imgur.com/gw5N1LE.png)
+
 ## ✨ Features
 
 - **🎨 Simple & Intuitive** - Draw rectangles and lines to design your cabinet layout
@@ -18,14 +28,17 @@ A lightweight, browser-based 3D cabinet design tool that runs entirely in your b
 
 ## 🚀 Quick Start
 
-### Method 1: Download and Run (Recommended)
+### Option 1: Use Online (No Download)
+Visit **[https://3d-sketch-light.netlify.app/](https://3d-sketch-light.netlify.app/)** and start designing immediately!
 
-1. **Download** - Click the green "Code" button above and select "Download ZIP"
+### Option 2: Download and Run Locally
+
+1. **Download** - Click the green "Code" button above and select **"Download ZIP"**
 2. **Extract** - Unzip the downloaded file to any folder on your computer
 3. **Run** - Simply double-click `index.html` to open in your default browser
 4. **Start Designing!** - That's it! No installation needed.
 
-### Method 2: Clone Repository
+### Option 3: Clone via Git
 
 ```bash
 git clone https://github.com/cryptosaras/3d_sketch.git
@@ -117,13 +130,11 @@ cd 3d_sketch
 - Export screenshots of your design
 - Light theme for printing
 
-## 🤝 Contributing
+## 📌 Project Status
 
-Contributions are welcome! Feel free to:
-- Report bugs
-- Suggest new features
-- Submit pull requests
-- Improve documentation
+This was a quick project and **will not be actively maintained or supported**. 
+
+Feel free to fork, modify, and use it however you like! The code is yours to do whatever you want with it.
 
 ## 📝 License
 
@@ -132,18 +143,13 @@ This project is open source and available under the MIT License.
 ## 🙏 Acknowledgments
 
 - Built with [Three.js](https://threejs.org/) - JavaScript 3D library
+- Created while testing out [Droid CLI](https://droidcli.com/) and Claude Sonnet 4.5
 - Inspired by the need for simple, accessible cabinet planning tools
 
 ## 📞 Support
 
 If you encounter any issues or have questions:
 1. Check the keyboard shortcuts in the app (collapsed section at bottom)
-2. Open an issue on GitHub
-3. Make sure you're using a modern browser with WebGL support
-
----
-
-**Made with ❤️ for DIY enthusiasts and cabinet makers**
-
-*No installation, no hassle - just open and design!*
+2. Make sure you're using a modern browser with WebGL support
+3. Since this is an unsupported project, feel free to fork and fix issues yourself!
 
