@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Cabinet Sketcher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            background: #2a2a2a;
+        }
+        
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #control-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(30, 30, 30, 0.95);
+            padding: 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            width: 320px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            color: white;
+        }
+        
+        .panel-section {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .section-header {
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: background 0.2s;
+        }
+        
+        .section-header:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .section-header .arrow {
+            transition: transform 0.3s;
+            font-size: 10px;
+        }
+        
+        .section-header.collapsed .arrow {
+            transform: rotate(-90deg);
+        }
+        
+        .section-content {
+            padding: 15px 20px;
+            max-height: 2000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+        }
+        
+        .section-content.collapsed {
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #999;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .control-group > label:not(.checkbox-label) {
+            margin-bottom: 8px;
+        }
+        
+        .tool-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+        }
+        
+        button.tool-btn {
+            position: relative;
+        }
+        
+        .key-hint {
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            font-size: 9px;
+            opacity: 0.6;
+            font-weight: normal;
+        }
+        
+        button {
+            padding: 8px 12px;
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            background: rgba(76, 175, 80, 0.1);
+            color: #66BB6A;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            background: rgba(76, 175, 80, 0.2);
+            border-color: #66BB6A;
+        }
+        
+        button.active {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        
+        button.delete {
+            border-color: rgba(244, 67, 54, 0.5);
+            background: rgba(244, 67, 54, 0.1);
+            color: #EF5350;
+            width: 100%;
+            font-weight: 600;
+            padding: 10px 12px;
+        }
+        
+        button.delete:hover {
+            background: rgba(244, 67, 54, 0.25);
+            border-color: #EF5350;
+        }
+        
+        .file-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .file-btn {
+            font-size: 12px;
+            padding: 10px 12px;
+        }
+        
+        button.file-btn {
+            border-color: #2196F3;
+            color: #2196F3;
+        }
+        
+        button.file-btn:hover {
+            background: #e3f2fd;
+        }
+        
+        #load-input {
+            display: none;
+        }
+        
+        input[type="number"], input[type="color"] {
+            width: 100%;
+            padding: 7px 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            box-sizing: border-box;
+        }
+        
+        input[type="number"]:focus, input[type="color"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            color: #ccc;
+            font-size: 12px;
+            text-transform: none;
+            letter-spacing: normal;
+            font-weight: normal;
+        }
+        
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 12px;
+            border-radius: 4px;
+            margin-bottom: 0;
+            transition: background 0.2s;
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .theme-toggle span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .danger-zone {
+            border-top: 1px solid rgba(244, 67, 54, 0.2);
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+        
+        .info {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #1976d2;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        #depth-input-group {
+            display: none;
+        }
+        
+        #depth-input-group.visible {
+            display: block;
+        }
+        
+        #shape-properties {
+            display: none;
+        }
+        
+        #shape-properties.visible {
+            display: block;
+        }
+        
+        #line-properties {
+            display: none;
+        }
+        
+        #line-properties.visible {
+            display: block;
+        }
+        
+        .property-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .property-row label {
+            font-size: 11px;
+            margin-bottom: 3px;
+            text-transform: none;
+            letter-spacing: normal;
+            color: #aaa;
+        }
+        
+        .property-row input {
+            padding: 6px;
+            font-size: 12px;
+        }
+        
+        .dimension-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .dimension-inputs input {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    
+    <div id="control-panel">
+        <!-- TOOLS SECTION -->
+        <div class="panel-section">
+            <div class="section-header">
+                <span>Tools</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="section-content">
+                <div class="tool-buttons">
+                    <button id="rect-tool" class="active tool-btn">Rectangle<span class="key-hint">A</span></button>
+                    <button id="line-tool" class="tool-btn">Line<span class="key-hint">S</span></button>
+                    <button id="move-tool" class="tool-btn">Move<span class="key-hint">D</span></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROOM SETTINGS -->
+        <div class="panel-section">
+            <div class="section-header">
+                <span>Room Settings</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="section-content">
+                <div class="control-group" style="margin-bottom: 0;">
+                    <label>Room Dimensions (cm):</label>
+                    <div class="dimension-inputs">
+                        <input type="number" id="room-width" value="400" min="100" max="2000" step="10" placeholder="Width">
+                        <input type="number" id="room-height" value="300" min="100" max="500" step="10" placeholder="Height">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LINE TOOL PROPERTIES -->
+        <div class="panel-section" id="line-properties">
+            <div class="section-header">
+                <span>Line Properties</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="section-content">
+                <div class="control-group" style="margin-bottom: 0;">
+                    <label>Line Width (px):</label>
+                    <input type="number" id="line-width-input" value="2" min="1" max="10" step="1">
+                </div>
+            </div>
+        </div>
+
+        <!-- SELECTED OBJECT PROPERTIES -->
+        <div class="panel-section" id="shape-properties">
+            <div class="section-header">
+                <span>Selected Cabinet</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="section-content">
+                <div class="control-group">
+                    <label>Dimensions:</label>
+                    <div class="property-row">
+                        <div>
+                            <label>Width (cm)</label>
+                            <input type="number" id="width-input" value="60" min="5" max="400" step="1">
+                        </div>
+                        <div>
+                            <label>Height (cm)</label>
+                            <input type="number" id="height-input" value="60" min="5" max="300" step="1">
+                        </div>
+                        <div>
+                            <label>Depth (cm)</label>
+                            <input type="number" id="depth-input" value="60" min="10" max="200" step="1">
+                        </div>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Position & Color:</label>
+                    <div class="property-row">
+                        <div>
+                            <label>X from Left (cm)</label>
+                            <input type="number" id="x-input" value="0" step="1" min="0">
+                        </div>
+                        <div>
+                            <label>Y from Bottom (cm)</label>
+                            <input type="number" id="y-input" value="0" step="1" min="0">
+                        </div>
+                        <div>
+                            <label>Color</label>
+                            <input type="color" id="color-input" value="#8B4513">
+                        </div>
+                    </div>
+                </div>
+                <div class="control-group" style="margin-bottom: 0;">
+                    <label>Visibility:</label>
+                    <div class="property-row" style="grid-template-columns: 1fr 1fr;">
+                        <div>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="object-show-dimensions" checked>
+                                Show Dimensions
+                            </label>
+                        </div>
+                        <div>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="object-show-distances" checked>
+                                Show Distances
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MEASUREMENTS -->
+        <div class="panel-section">
+            <div class="section-header">
+                <span>Measurements</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="section-content">
+                <div class="control-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="measurements-toggle" checked>
+                        Show All Measurements (M)
+                    </label>
+                </div>
+                <div class="control-group" style="margin-left: 20px;">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="object-dimensions-toggle" checked>
+                        Object Dimensions
+                    </label>
+                </div>
+                <div class="control-group" style="margin-left: 20px;">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="distance-lines-toggle" checked>
+                        Distance Lines
+                    </label>
+                </div>
+                <div class="control-group" style="margin-bottom: 0; margin-top: 10px;">
+                    <label>Measurement Size:</label>
+                    <div class="file-buttons">
+                        <button class="file-btn" id="measurement-decrease">-</button>
+                        <button class="file-btn" id="measurement-increase">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROJECT -->
+        <div class="panel-section">
+            <div class="section-header">
+                <span>Project</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="section-content">
+                <div class="control-group">
+                    <label>File Management:</label>
+                    <div class="file-buttons">
+                        <button class="file-btn" id="save-project">💾 Save</button>
+                        <button class="file-btn" id="load-project">📁 Load</button>
+                    </div>
+                    <input type="file" id="load-input" accept=".json">
+                </div>
+                <div class="control-group">
+                    <label>Export:</label>
+                    <button class="file-btn" id="screenshot-btn" style="width: 100%;">📸 Screenshot</button>
+                </div>
+                <div class="control-group">
+                    <label>Appearance:</label>
+                    <label class="checkbox-label theme-toggle">
+                        <input type="checkbox" id="light-theme-toggle">
+                        <span>☀️ Light Theme (Print-Friendly)</span>
+                    </label>
+                </div>
+                <div class="control-group danger-zone" style="margin-bottom: 0;">
+                    <label style="color: #EF5350; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Danger Zone:</label>
+                    <button class="delete" id="clear-all">🗑️ Clear All</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- INFO -->
+        <div class="panel-section">
+            <div class="section-header collapsed">
+                <span>Keyboard Shortcuts</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="section-content collapsed">
+                <div class="info" style="margin-bottom: 0;">
+                    <strong>Mouse Controls:</strong><br>
+                    Left drag: Draw/Move<br>
+                    Right drag: Pan camera<br>
+                    Middle drag: Rotate<br>
+                    Scroll: Zoom<br><br>
+                    <strong>Keyboard:</strong><br>
+                    A/S/D: Switch tools<br>
+                    Arrows: Move selected<br>
+                    Shift+Arrows: Fast move<br>
+                    Delete: Remove<br>
+                    M: Toggle measurements
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
